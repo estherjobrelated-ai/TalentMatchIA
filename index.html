@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TalentMatch AI • Recrutador Virtual Inteligente</title>
+  <!-- Tailwind CSS via CDN (funciona direto na Vercel sem build) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PDF.js para extrair texto do PDF direto no navegador -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    body {
+      background-color: #09090D;
+      color: #F3F4F6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .card-dark {
+      background-color: #121218;
+      border: 1px solid #1F1F2E;
+    }
+    .input-dark {
+      background-color: #09090D;
+      border: 1px solid #27273A;
+      color: #F3F4F6;
+    }
+    .input-dark:focus {
+      outline: none;
+      border-color: #5B46F6;
+    }
+    .btn-primary {
+      background-color: #5B46F6;
+      transition: background-color 0.2s;
+    }
+    .btn-primary:hover {
+      background-color: #4A35E0;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-6 px-4">
+
+  <!-- CABEÇALHO -->
+  <header class="w-full max-w-xl mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-[#5B46F6] flex items-center justify-center shadow-lg shadow-[#5B46F6]/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">TalentMatch AI</h1>
+          <p class="text-xs text-gray-400">Recrutador Virtual Inteligente • Triagem e Entrevista</p>
+        </div>
+      </div>
+
+      <!-- Botão Discreto para Área do Recrutador -->
+      <button onclick="abrirModalRecrutador()" class="text-xs px-3 py-2 rounded-lg card-dark text-gray-300 hover:text-white hover:border-[#5B46F6] flex items-center gap-1.5 transition">
+        <svg class="w-3.5 h-3.5 text-[#5B46F6]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+        Área Recrutador
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="w-full max-w-xl">
+
+    <!-- ETAPA 1: ENVIO DO CURRÍCULO (VISÃO DO CANDIDATO) -->
+    <section id="tela-candidato-inicio" class="card-dark rounded-2xl p-6 space-y-5">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Nome Completo do Candidato</label>
+        <input type="text" id="candidato-nome" placeholder="Ex: Esther Hadassa dos Anjos..." class="w-full input-dark rounded-xl px-4 py-3 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Currículo em PDF</label>
+        <label for="pdf-upload" class="border-2 border-dashed border-[#27273A] hover:border-[#5B46F6] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition bg-[#09090D]/50">
+          <svg class="w-6 h-6 text-gray-400 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
+          <span id="pdf-status" class="text-xs text-gray-300 text-center">Clique para selecionar PDF do currículo</span>
+          <input type="file" id="pdf-upload" accept="application/pdf" class="hidden" onchange="processarPDF(event)" />
+        </label>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Ou cole o texto do currículo</label>
+        <textarea id="curriculo-texto" rows="4" placeholder="Cole aqui o conteúdo do currículo caso não envie PDF..." class="w-full input-dark rounded-xl p-4 text-sm"></textarea>
+      </div>
+
+      <button onclick="iniciarEntrevista()" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#5B46F6]/25">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+        Iniciar Entrevista Virtual
+      </button>
+    </section>
+
+    <!-- ETAPA 2: PERGUNTAS DA ENTREVISTA (VISÃO DO CANDIDATO) -->
+    <section id="tela-entrevista" class="hidden card-dark rounded-2xl p-6 space-y-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <p id="entrevista-header-nome" class="text-[11px] font-bold uppercase tracking-wider text-[#7C6BF8]">ENTREVISTA VIRTUAL</p>
+          <h2 id="entrevista-contador" class="text-xl font-bold text-white mt-0.5">Pergunta 1 de 4</h2>
+        </div>
+        <span class="p-2 rounded-lg bg-[#1A1A24] text-[#7C6BF8]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+          </svg>
+        </span>
+      </div>
+
+      <div class="input-dark rounded-xl p-5">
+        <p id="pergunta-atual-texto" class="text-base font-medium text-gray-100 leading-relaxed"></p>
+      </div>
+
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Resposta do Candidato (Texto ou Voz)</label>
+          <button type="button" id="btn-voz" onclick="ativarReconhecimentoVoz()" class="text-xs px-3 py-1.5 rounded-lg bg-[#1D1D29] hover:bg-[#282838] text-gray-200 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-[#7C6BF8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+            </svg>
+            <span id="btn-voz-texto">Responder por Voz</span>
+          </button>
+        </div>
+        <textarea id="resposta-atual" rows="4" placeholder="Digite ou fale sua resposta..." class="w-full input-dark rounded-xl p-4 text-sm"></textarea>
+      </div>
+
+      <button id="btn-proxima-pergunta" onclick="salvarEAvancar()" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-[#5B46F6]/25">
+        Próxima Pergunta
+      </button>
+    </section>
+
+    <!-- ETAPA 3: ENTREVISTA CONCLUÍDA (BLOQUEIA RELATÓRIO PARA O CANDIDATO) -->
+    <section id="tela-concluido-candidato" class="hidden card-dark rounded-2xl p-8 text-center space-y-4">
+      <div class="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-white">Entrevista Concluída e Salva!</h2>
+      <p class="text-sm text-gray-400 leading-relaxed">
+        Seu currículo e suas respostas foram registrados com segurança. Somente o recrutador ou a empresa responsável tem acesso para gerar e visualizar o Relatório Final.
+      </p>
+      <div class="pt-3 flex flex-col sm:flex-row gap-3 justify-center">
+        <button onclick="voltarParaInicio()" class="px-4 py-2.5 rounded-xl input-dark text-xs font-medium text-gray-300 hover:text-white">
+          Nova Entrevista (Outro Candidato)
+        </button>
+        <button onclick="abrirModalRecrutador()" class="px-4 py-2.5 rounded-xl btn-primary text-xs font-semibold text-white">
+          Acesso Restrito: Gerar Relatório (PIN)
+        </button>
+      </div>
+    </section>
+
+    <!-- ÁREA EXCLUSIVA DO RECRUTADOR (PROTEGIDA POR PIN DE 1 DÍGITO) -->
+    <section id="tela-recrutador" class="hidden space-y-6">
+      
+      <!-- Barra Superior do Recrutador -->
+      <div class="card-dark rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#7C6BF8]">Painel do Recrutador</span>
+          <p class="text-xs text-gray-400">PIN ativo configurado • Acesso autorizado</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="redefinirPIN()" class="text-xs px-3 py-1.5 rounded-lg input-dark text-gray-300 hover:text-white">Alterar PIN</button>
+          <button onclick="sairModoRecrutador()" class="text-xs px-3 py-1.5 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25">Sair</button>
+        </div>
+      </div>
+
+      <!-- CONFIGURADOR DE QUANTIDADE DE PERGUNTAS -->
+      <div class="card-dark rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white">Configurar Perguntas da Entrevista</h3>
+            <p class="text-xs text-gray-400">Defina quantas perguntas o candidato responderá.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="qtd-perguntas" class="text-xs text-gray-400">Qtd:</label>
+            <input type="number" id="qtd-perguntas" min="1" max="15" value="4" onchange="atualizarCamposPerguntas()" class="w-16 input-dark rounded-lg px-2.5 py-1.5 text-center font-bold text-white" />
+          </div>
+        </div>
+
+        <div id="lista-inputs-perguntas" class="space-y-3"></div>
+
+        <button onclick="salvarConfiguracaoPerguntas()" class="w-full btn-primary text-white text-sm font-semibold py-3 rounded-xl">
+          Salvar Perguntas para Próximos Candidatos
+        </button>
+      </div>
+
+      <!-- CANDIDATOS SALVOS E GERAÇÃO DE RELATÓRIO FINAL -->
+      <div class="card-dark rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-white">Candidatos Avaliados</h3>
+          <button onclick="limparCandidatos()" class="text-xs text-gray-400 hover:text-red-400">Limpar Histórico</button>
+        </div>
+
+        <div id="lista-candidatos" class="space-y-3"></div>
+      </div>
+
+      <!-- RELATÓRIO FINAL GERADO -->
+      <div id="box-relatorio-final" class="hidden card-dark rounded-2xl p-6 space-y-4 border-[#5B46F6]">
+        <div class="flex items-center justify-between border-b border-[#1F1F2E] pb-3">
+          <h3 class="text-lg font-bold text-white">Relatório Final do Candidato</h3>
+          <button onclick="window.print()" class="text-xs px-3 py-1.5 rounded-lg bg-[#5B46F6]/20 text-[#9B8AFB] hover:bg-[#5B46F6]/30">Imprimir / Salvar PDF</button>
+        </div>
+        <div id="conteudo-relatorio-final" class="space-y-4 text-sm text-gray-300"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL DE PIN (CRIAR PIN DE 1 DÍGITO OU DIGITAR PIN EXISTENTE) -->
+  <div id="modal-pin" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="card-dark rounded-2xl max-w-sm w-full p-6 space-y-4 text-center">
+      <div class="w-12 h-12 rounded-full bg-[#5B46F6]/20 text-[#7C6BF8] flex items-center justify-center mx-auto">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+        </svg>
+      </div>
+      
+      <h3 id="modal-pin-titulo" class="text-lg font-bold text-white">Acesso do Recrutador</h3>
+      <p id="modal-pin-desc" class="text-xs text-gray-400">Digite seu PIN numérico de 1 dígito (0 a 9).</p>
+
+      <input 
+        type="password" 
+        id="input-pin" 
+        maxlength="1" 
+        inputmode="numeric" 
+        pattern="[0-9]" 
+        placeholder="•"
+        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 1)"
+        class="w-20 h-16 mx-auto text-center text-3xl font-bold input-dark rounded-2xl block tracking-widest"
+      />
+
+      <p id="modal-pin-erro" class="hidden text-xs text-red-400 font-medium"></p>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="fecharModalPIN()" class="flex-1 py-2.5 rounded-xl input-dark text-xs font-medium text-gray-300">Cancelar</button>
+        <button onclick="confirmarPIN()" class="flex-1 py-2.5 rounded-xl btn-primary text-xs font-semibold text-white">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
