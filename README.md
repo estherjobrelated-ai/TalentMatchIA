@@ -34,7 +34,6 @@ O projeto foi construído utilizando uma arquitetura moderna e estática de alta
 * **Tailwind CSS (via CDN):** Design system moderno, responsivo e com identidade visual em modo escuro (Dark Mode).
 * **JavaScript (Vanilla):** Lógica completa de navegação, manipulação do `localStorage`, validação de PIN e integração de APIs.
 * **PDF.js (via CDN):** Leitura e extração de texto de arquivos PDF direto no lado do cliente (browser).
-* **Vercel:** Plataforma de hospedagem e deploy contínuo de alta velocidade.
 
 ---
 
